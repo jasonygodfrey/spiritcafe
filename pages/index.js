@@ -30,12 +30,12 @@ export default function Home() {
                 <link rel="shortcut icon" href="/skrillexlogoico.ico" type="image/x-icon" />
                 <link href="https://fonts.googleapis.com/css2?family=Nimbus+Sans:wght@400;700&display=swap" rel="stylesheet" />
             </Head>
-
+            {/* 
             <div className={styles.container}>
                 <a className={styles.link} href="/rlt">RED LETTER TITLE</a>
                 <a className={styles.link} href="/br">BR</a>
             </div>
-
+            */}
             <div id="app" ref={mount}>
                 {/* Your app content goes here */}
             </div>
