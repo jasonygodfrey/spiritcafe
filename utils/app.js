@@ -10,8 +10,8 @@ export function initializeThreeJS(mountPoint) {
     // Initialize the noise generator
     const noise3DFunction = createNoise3D();
 
-    const mouseRadius = 0.2; // Adjust this value as needed
-    const mouseStrength = 0.05; // Adjust this value as needed, if not defined elsewhere
+    const mouseRadius = 0.02; // Adjust this value as needed
+    const mouseStrength = 0.005; // Adjust this value as needed, if not defined elsewhere
 
 
     // Set up the scene, camera, and renderer
@@ -31,7 +31,7 @@ export function initializeThreeJS(mountPoint) {
     composer.addPass(renderPass);
 
     const bloomOptions = {
-        strength: 0.8,
+        strength: 0.465,
         radius: 0.3,
         threshold: 0
     };
@@ -64,13 +64,20 @@ export function initializeThreeJS(mountPoint) {
         camera.position.x += (intersectPoint.x * cameraParallaxFactor - camera.position.x) * 0.05;
         camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05;
         camera.lookAt(scene.position);
+
+
+
     });
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableRotate = false;
 controls.enablePan = false;
+controls.enableZoom = true;
+// Prevent the camera from going under the axis
+controls.minPolarAngle = 0; // Prevents the camera from going below the horizontal plane
+controls.maxPolarAngle = Math.PI / 2; // Prevents the camera from going above the horizontal plane
     // Define particlesGeometry in the outer scope
     let particlesGeometry;
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // soft white light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // soft white light
     scene.add(ambientLight);
     
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
@@ -85,6 +92,7 @@ loader.load('kawaiiscene/scene.gltf', function (gltf) {
     console.error(error);
 });
 
+scene.rotation.y -= Math.PI / 2;
     textureLoader.load('skrillex2023logo.png', (imageTexture) => {
         // ...
         //  particlesGeometry = new THREE.BufferGeometry();
