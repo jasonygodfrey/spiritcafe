@@ -3,6 +3,8 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { createNoise3D } from 'simplex-noise';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 export function initializeThreeJS(mountPoint) {
     // Initialize the noise generator
@@ -17,7 +19,8 @@ export function initializeThreeJS(mountPoint) {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0x000000, 0);
+    //renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0xF5F5DC, 1); // Beige color
 
     mountPoint.appendChild(renderer.domElement);
 
@@ -28,8 +31,8 @@ export function initializeThreeJS(mountPoint) {
     composer.addPass(renderPass);
 
     const bloomOptions = {
-        strength: 2.5,
-        radius: 0.6,
+        strength: 0.8,
+        radius: 0.3,
         threshold: 0
     };
     const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomOptions.strength, bloomOptions.radius, bloomOptions.threshold);
@@ -62,8 +65,25 @@ export function initializeThreeJS(mountPoint) {
         camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05;
         camera.lookAt(scene.position);
     });
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableRotate = false;
+controls.enablePan = false;
     // Define particlesGeometry in the outer scope
     let particlesGeometry;
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); // soft white light
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
+    directionalLight.position.set(0, 1, 1); // set the direction of the light
+    scene.add(directionalLight);
+
+    const loader = new GLTFLoader();
+
+loader.load('kawaiiscene/scene.gltf', function (gltf) {
+    scene.add(gltf.scene);
+}, undefined, function (error) {
+    console.error(error);
+});
 
     textureLoader.load('skrillex2023logo.png', (imageTexture) => {
         // ...
@@ -105,9 +125,9 @@ export function initializeThreeJS(mountPoint) {
         // Add a new function to calculate the average z-coordinate of all particles
 
     }
-    const scale = 1; // Adjust this value for your desired scale. E.g., 0.5 means the image will be 50% smaller
+    const scale = 4; // Adjust this value for your desired scale. E.g., 0.5 means the image will be 50% smaller
 
-    textureLoader.load('skrillex2023logo.png', (imageTexture) => {
+    textureLoader.load('circle.png', (imageTexture) => {
         const imgWidth = imageTexture.image.width * scale;
         const imgHeight = imageTexture.image.height * scale;
 
@@ -119,7 +139,7 @@ export function initializeThreeJS(mountPoint) {
         context.drawImage(imageTexture.image, 0, 0, imgWidth, imgHeight);
 
         const imgData = context.getImageData(0, 0, imgWidth, imgHeight).data;
-        const resolutionFactor = 4;
+        const resolutionFactor = 3;
 
         const particleTexture = textureLoader.load('particles2.png');
         const particlesGeometry = new THREE.BufferGeometry();
@@ -143,7 +163,7 @@ export function initializeThreeJS(mountPoint) {
                     originalPositions.push(xPos, yPos, 0);
                     particleColors.push((r / 255) * increasedBrightness * 0.8, (g / 255) * increasedBrightness, (b / 255) * increasedBrightness);
                 }
-                //particleColors.push(1, 0, 0); // Set RGB values to (1, 0, 0) for red
+                particleColors.push(1, 0, 0); // Set RGB values to (1, 0, 0) for red
 
             }
         }
@@ -152,7 +172,7 @@ export function initializeThreeJS(mountPoint) {
         particlesGeometry.setAttribute('color', new THREE.Float32BufferAttribute(particleColors, 3));
 
         const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.05,
+            size: 0.02,
             map: particleTexture,
             vertexColors: true,
             transparent: true,
@@ -161,7 +181,7 @@ export function initializeThreeJS(mountPoint) {
 
         });
         const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particles);
+        //scene.add(particles);
 
 
         const radius = 1; // Replace with the desired radius of the circle
@@ -179,6 +199,7 @@ export function initializeThreeJS(mountPoint) {
         function animate() {
             const positions = particlesGeometry.attributes.position.array;
             const time = Date.now() * 0.0001;  // adjust the multiplier to control the speed of the animation
+            controls.update();
 
             for (let i = 0; i < positions.length; i += 3) {
                 let particlePos = new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]);
@@ -229,16 +250,16 @@ export function initializeThreeJS(mountPoint) {
         composer.setSize(newWidth, newHeight);
     });
 
-    window.addEventListener('deviceorientation', function(event) {
+    window.addEventListener('deviceorientation', function (event) {
         var alpha = event.alpha;
         var beta = event.beta;
         var gamma = event.gamma;
-        
+
         // Convert degrees to radians
         var alphaRad = alpha * (Math.PI / 180);
         var betaRad = beta * (Math.PI / 180);
         var gammaRad = gamma * (Math.PI / 180);
-    
+
         // Apply rotation to the camera
         camera.rotation.set(betaRad, alphaRad, -gammaRad);
     }, true);
