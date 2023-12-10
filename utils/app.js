@@ -213,36 +213,39 @@ scene.rotation.y -= Math.PI / 2;
         function animate() {
             const positions = particlesGeometry.attributes.position.array;
             const time = Date.now() * 0.0001;  // adjust the multiplier to control the speed of the animation
-            controls.update();
-
-            for (let i = 0; i < positions.length; i += 3) {
-                let particlePos = new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]);
-                let originalPos = new THREE.Vector3(originalPositions[i], originalPositions[i + 1], originalPositions[i + 2]);
-
-                // Calculate the distance between the particle and the mouse
-                let distanceToMouse = particlePos.distanceTo(mouse);
-
-                // If the distance is less than the mouseRadius, move the particle towards the mouse
-                if (distanceToMouse < mouseRadius) {
-                    particlePos.lerp(new THREE.Vector3(mouse.x, mouse.y, particlePos.z), mouseStrength);
-                } else {
-                    // Otherwise, move the particle back to its original position
-                    particlePos.lerp(originalPos, 0.05);
+        
+            if (!deviceOrientationActive) {
+                controls.update();
+        
+                for (let i = 0; i < positions.length; i += 3) {
+                    let particlePos = new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]);
+                    let originalPos = new THREE.Vector3(originalPositions[i], originalPositions[i + 1], originalPositions[i + 2]);
+        
+                    // Calculate the distance between the particle and the mouse
+                    let distanceToMouse = particlePos.distanceTo(mouse);
+        
+                    // If the distance is less than the mouseRadius, move the particle towards the mouse
+                    if (distanceToMouse < mouseRadius) {
+                        particlePos.lerp(new THREE.Vector3(mouse.x, mouse.y, particlePos.z), mouseStrength);
+                    } else {
+                        // Otherwise, move the particle back to its original position
+                        particlePos.lerp(originalPos, 0.05);
+                    }
+        
+                    // Use the noise function to get a smooth, varying value for each particle
+                    const noiseValue = noise3DFunction(particlePos.x, particlePos.y, time);
+        
+                    // Use the noise value to adjust the position of the particle
+                    particlePos.z += noiseValue * 0.01;  // adjust the multiplier to control the amplitude of the animation
+        
+                    positions[i] = particlePos.x;
+                    positions[i + 1] = particlePos.y;
+                    positions[i + 2] = particlePos.z;
                 }
-
-                // Use the noise function to get a smooth, varying value for each particle
-                const noiseValue = noise3DFunction(particlePos.x, particlePos.y, time);
-
-                // Use the noise value to adjust the position of the particle
-                particlePos.z += noiseValue * 0.01;  // adjust the multiplier to control the amplitude of the animation
-
-                positions[i] = particlePos.x;
-                positions[i + 1] = particlePos.y;
-                positions[i + 2] = particlePos.z;
             }
-
+        
             particlesGeometry.attributes.position.needsUpdate = true;
-
+        
             //renderer.render(scene, camera);
             composer.render();
             requestAnimationFrame(animate);
@@ -265,17 +268,19 @@ scene.rotation.y -= Math.PI / 2;
         renderer.setSize(newWidth, newHeight);
         composer.setSize(newWidth, newHeight);
     });
+    let deviceOrientationActive = false;
 
     window.addEventListener('deviceorientation', function (event) {
+        deviceOrientationActive = true;
         var alpha = event.alpha;
         var beta = event.beta;
         var gamma = event.gamma;
-
+    
         // Convert degrees to radians
         var alphaRad = alpha * (Math.PI / 180);
         var betaRad = beta * (Math.PI / 180);
         var gammaRad = gamma * (Math.PI / 180);
-
+    
         // Apply rotation to the camera
         camera.rotation.set(betaRad, alphaRad, -gammaRad);
     }, true);
