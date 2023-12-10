@@ -63,6 +63,7 @@ export function initializeThreeJS(mountPoint) {
 
         camera.position.x += (intersectPoint.x * cameraParallaxFactor - camera.position.x) * 0.05;
         camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05;
+        
         camera.lookAt(scene.position);
 
 
@@ -87,7 +88,9 @@ controls.maxPolarAngle = Math.PI / 2; // Prevents the camera from going above th
     const loader = new GLTFLoader();
 
 loader.load('kawaiiscene/scene.gltf', function (gltf) {
+    
     scene.add(gltf.scene);
+    scene.position.y -= 1; // Lower the scene by 5 units
 }, undefined, function (error) {
     console.error(error);
 });
@@ -127,9 +130,12 @@ scene.rotation.y -= Math.PI / 2;
             const intersectPoint = raycaster.ray.at(1.3);
 
             camera.position.x += (intersectPoint.x * cameraParallaxFactor - camera.position.x) * 0.05;
-            camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05;
+            camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05 ;
+                camera.position.y += (-intersectPoint.y * cameraParallaxFactor - camera.position.y) * 0.05 + 10; // Adjust this value as needed
+
             camera.lookAt(scene.position);
         }
+
         // Add a new function to calculate the average z-coordinate of all particles
 
     }
@@ -246,6 +252,8 @@ scene.rotation.y -= Math.PI / 2;
     });
 
     camera.position.z = 1.38;
+    camera.position.y += 10; // Adjust this value as needed
+
 
     window.addEventListener('resize', () => {
         const newWidth = window.innerWidth;
